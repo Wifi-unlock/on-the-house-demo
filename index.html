@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On the House - Exclusive Home Improvement Deals</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf9;
+            color: #292524;
+            line-height: 1.6;
+        }
+        
+        /* Agent Portal */
+        .agent-portal {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1c1917 0%, #44403c 100%);
+            padding: 2rem;
+        }
+        
+        .agent-portal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .agent-card {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .qr-display {
+            background: #f5f5f4;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            border: 2px dashed #d6d3d1;
+        }
+        
+        /* Public Marketplace */
+        .marketplace {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .marketplace.active {
+            display: block;
+        }
+        
+        .header {
+            background: #1c1917;
+            border-bottom: 1px solid #44403c;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-content {
+            max-width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .logo-container {
+            width: 100%;
+            height: 280px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+        
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .tagline-container {
+            background: #292524;
+            padding: 1rem;
+            border-top: 1px solid #44403c;
+        }
+        
+        .tagline {
+            color: #d6d3d1;
+            font-size: 1rem;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Category Tabs */
+        .tabs-container {
+            background: white;
+            border-bottom: 1px solid #e7e5e4;
+            padding: 1.5rem 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tabs-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 1rem;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            flex-shrink: 0;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e7e5e4;
+            border-radius: 9999px;
+            background: white;
+            color: #78716c;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+        
+        .tab:hover {
+            border-color: #a8a29e;
+            color: #44403c;
+        }
+        
+        .tab.active {
+            background: #1c1917;
+            color: white;
+            border-color: #1c1917;
+        }
+        
+        /* Supplier Logo Banner - FULL COLOR */
+        .logo-banner {
+            background: #f5f5f4;
+            border-bottom: 1px solid #e7e5e4;
+            padding: 2rem 0;
+            overflow: hidden;
+        }
+        
+        .banner-track {
+            display: flex;
+            animation: scroll 25s linear infinite;
+            width: max-content;
+            align-items: center;
+        }
+        
+        .banner-track:hover {
+            animation-play-state: paused;
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .supplier-logo-item {
+            flex-shrink: 0;
+            margin: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* REMOVED: filter: grayscale(100%); */
+            opacity: 0.9;
+            transition: all 0.3s ease;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e7e5e4;
+            min-width: 180px;
+            height: 90px;
+        }
+        
+        .supplier-logo-item:hover {
+            /* REMOVED: filter: grayscale(0%); */
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .supplier-logo-img {
+            max-height: 70px;
+            max-width: 160px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* Fallback text */
+        .supplier-logo-text {
+            font-weight: 700;
+            color: #1c1917;
+            font-size: 1rem;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .category-section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 220px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e7e5e4;
+        }
+        
+        .category-icon {
+            width: 44px;
+            height: 44px;
+            background: #1c1917;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1c1917;
+            text-transform: capitalize;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .supplier-grid {
+            display: grid;
+            gap: 1.25rem;
+        }
+        
+        .supplier-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.75rem;
+            border: 1px solid #e7e5e4;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .supplier-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #a8a29e;
+        }
+        
+        .supplier-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #1c1917;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .supplier-card:hover::before {
+            opacity: 1;
+        }
+        
+        .supplier-logo-in-card {
+            width: 100%;
+            height: 140px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1rem;
+            display: block;
+        }
+        
+        .supplier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .supplier-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1c1917;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .supplier-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.35rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #fde68a;
+        }
+        
+        .supplier-offer {
+            background: linear-gradient(to right, #f5f5f4, #e7e5e4);
+            border-left: 4px solid #1c1917;
+            padding: 1rem 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1rem 0;
+            font-weight: 600;
+            color: #1c1917;
+            font-size: 1.05rem;
+        }
+        
+        .supplier-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #78716c;
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .redeem-btn {
+            width: 100%;
+            margin-top: auto;
+            background: #1c1917;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            letter-spacing: 0.025em;
+        }
+        
+        .redeem-btn:hover {
+            background: #292524;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(28, 25, 23, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            padding: 2.5rem;
+            position: relative;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a8a29e;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #f5f5f4;
+            color: #1c1917;
+        }
+        
+        .modal-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1c1917;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .modal-subtitle {
+            color: #78716c;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #44403c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #d6d3d1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: #fafaf9;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #1c1917;
+            box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.1);
+            background: white;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: #1c1917;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: #292524;
+            transform: translateY(-1px);
+        }
+        
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: #16a34a;
+            font-size: 2.5rem;
+            border: 4px solid #bbf7d0;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 640px) {
+            .logo-container {
+                height: 200px;
+            }
+            
+            .tabs {
+                gap: 0.4rem;
+            }
+            
+            .tab {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            .supplier-logo-item {
+                margin: 0 1.5rem;
+                min-width: 150px;
+                height: 80px;
+                padding: 0.75rem;
+            }
+            
+            .supplier-logo-img {
+                max-height: 60px;
+                max-width: 130px;
+            }
+            
+            .supplier-logo-in-card {
+                height: 120px;
+            }
+            
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .category-section {
+                scroll-margin-top: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AGENT PORTAL -->
+    <div class="agent-portal" id="agentPortal">
+        <div class="agent-card">
+            <h1 style="font-size: 1.875rem; font-weight: 600; margin-bottom: 0.5rem; color: #1c1917; font-family: 'Playfair Display', serif;">Generate QR Code</h1>
+            <p style="color: #78716c; margin-bottom: 2rem;">Create a unique QR code for your property listing.</p>
+            
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #44403c; margin-bottom: 0.5rem;">Property Address</label>
+                <input type="text" id="propAddress" class="agent-input" placeholder="e.g., 15 Nelson Mandela Drive, Sandton">
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #44403c; margin-bottom: 0.5rem;">Agent Name</label>
+                <input type="text" id="agentNameInput" class="agent-input" placeholder="Your full name">
+            </div>
+            
+            <button onclick="generateQR()" class="btn-primary" style="margin-bottom: 2rem;">Generate QR Code</button>
+            
+            <div id="qrDisplay" class="qr-display" style="display: none;">
+                <div id="qrcode"></div>
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: #78716c; word-break: break-all;" id="qrUrl"></p>
+                <button onclick="downloadQR()" class="btn-primary" style="margin-top: 1rem; background: #059669;">Download QR Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PUBLIC MARKETPLACE -->
+    <div class="marketplace active" id="marketplace">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="onthehouse-logo.jpg" alt="On the House - Premium Real Estate Perks" onerror="this.style.display='none'; this.parentElement.style.background='#1c1917'; this.parentElement.innerHTML='<div style=\'color:#d6d3d1; font-size:2rem; font-family: Playfair Display, serif; display:flex; align-items:center; justify-content:center; height:100%;\'>On the House</div>'">
+                </div>
+                <div class="tagline-container">
+                    <p class="tagline">Exclusive home improvement deals for distinguished property viewers</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Category Tabs -->
+        <div class="tabs-container">
+            <div class="tabs-wrapper">
+                <div class="tabs" id="categoryTabs">
+                    <button class="tab active" onclick="scrollToCategory('all')">All Deals</button>
+                    <button class="tab" onclick="scrollToCategory('bathroom')">Bathrooms</button>
+                    <button class="tab" onclick="scrollToCategory('flooring')">Flooring</button>
+                    <button class="tab" onclick="scrollToCategory('moving')">Moving & Storage</button>
+                    <button class="tab" onclick="scrollToCategory('security')">Security</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrolling Supplier Logo Banner - FULL COLOR -->
+        <div class="logo-banner">
+            <div class="banner-track" id="logoBanner">
+                <!-- Logos inserted here -->
+            </div>
+        </div>
+
+        <main class="container" id="supplierContainer">
+            <!-- Categories rendered here -->
+        </main>
+    </div>
+
+    <!-- Redeem Modal -->
+    <div class="modal" id="redeemModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalBody">
+                <h2 class="modal-title">Redeem Your Offer</h2>
+                <p class="modal-subtitle">Enter your details to receive <strong id="offerText" style="color: #1c1917;"></strong> from <strong id="supplierText" style="color: #1c1917;"></strong></p>
+                
+                <form onsubmit="handleRedeem(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="redeemName" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" id="redeemEmail" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number (optional)</label>
+                        <input type="tel" class="form-input" id="redeemPhone" placeholder="+27 71 234 5678">
+                    </div>
+                    <button type="submit" class="submit-btn">Send Discount to My Email</button>
+                </form>
+                <p style="font-size: 0.75rem; color: #a8a29e; margin-top: 1.5rem; text-align: center;">
+                    By redeeming, you agree to share your details with the supplier. Valid for 30 days.
+                </p>
+            </div>
+            
+            <div id="successBody" class="hidden">
+                <div class="success-icon">✓</div>
+                <h2 class="modal-title text-center">Check Your Inbox!</h2>
+                <p class="text-center text-gray-600 mb-4">We've sent your exclusive discount to <strong id="successEmail" style="color: #1c1917;"></strong></p>
+                <button onclick="closeModal()" class="submit-btn">Browse More Deals</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CORRECTED FILE PATHS with your exact extensions
+        const suppliersData = {
+            bathroom: {
+                icon: "🛁",
+                title: "Bathrooms",
+                suppliers: [
+                    {
+                        id: "bath-1",
+                        name: "Pro Bathrooms",
+                        logo: "images/bathroom-renovations.png",
+                        offer: "R5,000 Off Full Bathroom Renovation",
+                        description: "Luxury bathroom fittings, tiling, and complete renovation services. Building dreams since 1985.",
+                        location: "Gauteng",
+                        rating: 4.8
+                    }
+                ]
+            },
+            flooring: {
+                icon: "🏠",
+                title: "Flooring",
+                suppliers: [
+                    {
+                        id: "floor-1",
+                        name: "Exclusive Floors",
+                        logo: "images/exclusivefloors-flooring.jpg",
+                        offer: "20% Off Engineered Wood Flooring",
+                        description: "Premium hardwood, laminate, and vinyl flooring installation.",
+                        location: "Nationwide",
+                        rating: 4.9
+                    }
+                ]
+            },
+            moving: {
+                icon: "📦",
+                title: "Moving & Storage",
+                suppliers: [
+                    {
+                        id: "move-1",
+                        name: "Boxman",
+                        logo: "images/boxman-moving.png",
+                        offer: "15% Off Moving Boxes & Supplies",
+                        description: "Quality moving boxes, packing materials, and storage solutions.",
+                        location: "Nationwide",
+                        rating: 4.7
+                    },
+                    {
+                        id: "move-2",
+                        name: "LoadIt",
+                        logo: "images/loadit-moving.jpg",
+                        offer: "Free Furniture Blankets with Move",
+                        description: "Professional moving services for homes and offices.",
+                        location: "Gauteng & Western Cape",
+                        rating: 4.8
+                    },
+                    {
+                        id: "move-3",
+                        name: "Easy Store",
+                        logo: "images/storage-units.png",
+                        offer: "First Month Free Storage",
+                        description: "Secure storage units for short and long-term needs.",
+                        location: "Nationwide",
+                        rating: 4.6
+                    }
+                ]
+            },
+            security: {
+                icon: "🔒",
+                title: "Security",
+                suppliers: [
+                    {
+                        id: "sec-1",
+                        name: "Beagle Watch",
+                        logo: "images/beaglewatch-security.png",
+                        offer: "Free Installation + 3 Months Monitoring",
+                        description: "Armed response, CCTV, and alarm systems with 24/7 monitoring.",
+                        location: "Gauteng",
+                        rating: 4.9
+                    }
+                ]
+            }
+        };
+
+        let currentSupplier = null;
+        let qrCodeObj = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('agent') === 'true') {
+                document.getElementById('agentPortal').classList.add('active');
+                document.getElementById('marketplace').classList.remove('active');
+            } else {
+                renderAlphabeticalCategories();
+                renderLogoBanner();
+                
+                const property = urlParams.get('property');
+                if (property) {
+                    document.querySelector('.tagline').textContent = 
+                        `Exclusive deals for viewers of ${property}`;
+                }
+            }
+        });
+
+        function renderLogoBanner() {
+            const banner = document.getElementById('logoBanner');
+            const allSuppliers = [];
+            
+            Object.values(suppliersData).forEach(category => {
+                category.suppliers.forEach(supplier => {
+                    allSuppliers.push(supplier);
+                });
+            });
+            
+            const createLogos = () => allSuppliers.map(supplier => `
+                <div class="supplier-logo-item" title="${supplier.name}">
+                    <img src="${supplier.logo}" 
+                         alt="${supplier.name}" 
+                         class="supplier-logo-img"
+                         loading="lazy"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'supplier-logo-text\\'>${supplier.name}</div>'">
+                </div>
+            `).join('');
+            
+            banner.innerHTML = createLogos() + createLogos();
+        }
+
+        function renderAlphabeticalCategories() {
+            const container = document.getElementById('supplierContainer');
+            container.innerHTML = '';
+            
+            const categories = Object.keys(suppliersData).sort();
+            
+            categories.forEach(categoryKey => {
+                const category = suppliersData[categoryKey];
+                
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                section.id = `category-${categoryKey}`;
+                
+                section.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-icon">${category.icon}</div>
+                        <h2 class="category-title">${category.title}</h2>
+                    </div>
+                    <div class="supplier-grid">
+                        ${category.suppliers.map(supplier => `
+                            <div class="supplier-card" onclick="openRedeem('${supplier.id}', '${categoryKey}')">
+                                <img src="${supplier.logo}" 
+                                     alt="${supplier.name}" 
+                                     class="supplier-logo-in-card"
+                                     loading="lazy"
+                                     onerror="this.style.display='none'">
+                                <div class="supplier-header">
+                                    <h3 class="supplier-name">${supplier.name}</h3>
+                                    <span class="supplier-badge">${supplier.rating} ★</span>
+                                </div>
+                                <div class="supplier-offer">${supplier.offer}</div>
+                                <p style="color: #78716c; font-size: 0.95rem; margin-bottom: 0.5rem; line-height: 1.5;">${supplier.description}</p>
+                                <div class="supplier-meta">
+                                    <span>📍 ${supplier.location}</span>
+                                </div>
+                                <button class="redeem-btn">
+                                    <span>Redeem Offer</span>
+                                    <span style="font-size: 1.2rem;">→</span>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(section);
+            });
+        }
+
+        function scrollToCategory(category) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (category === 'all') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                const element = document.getElementById(`category-${category}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function openRedeem(supplierId, categoryKey) {
+            const category = suppliersData[categoryKey];
+            const supplier = category.suppliers.find(s => s.id === supplierId);
+            currentSupplier = supplier;
+            
+            document.getElementById('offerText').textContent = supplier.offer;
+            document.getElementById('supplierText').textContent = supplier.name;
+            document.getElementById('redeemModal').classList.add('active');
+            
+            document.getElementById('modalBody').classList.remove('hidden');
+            document.getElementById('successBody').classList.add('hidden');
+            document.getElementById('redeemName').value = '';
+            document.getElementById('redeemEmail').value = '';
+            document.getElementById('redeemPhone').value = '';
+        }
+
+        function closeModal() {
+            document.getElementById('redeemModal').classList.remove('active');
+        }
+
+        function handleRedeem(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('redeemName').value;
+            const email = document.getElementById('redeemEmail').value;
+            
+            console.log('Redeeming:', {
+                supplier: currentSupplier,
+                buyer: { name, email },
+                timestamp: new Date().toISOString()
+            });
+            
+            document.getElementById('modalBody').classList.add('hidden');
+            document.getElementById('successBody').classList.remove('hidden');
+            document.getElementById('successEmail').textContent = email;
+        }
+
+        function generateQR() {
+            const address = document.getElementById('propAddress').value;
+            const agent = document.getElementById('agentNameInput').value;
+            
+            if (!address || !agent) {
+                alert('Please fill in both fields');
+                return;
+            }
+            
+            const display = document.getElementById('qrDisplay');
+            const container = document.getElementById('qrcode');
+            container.innerHTML = '';
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            const params = new URLSearchParams({
+                property: address,
+                agent: agent,
+                ref: Date.now()
+            });
+            const fullUrl = baseUrl + '?' + params.toString();
+            
+            qrCodeObj = new QRCode(container, {
+                text: fullUrl,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('qrUrl').textContent = fullUrl;
+            display.style.display = 'block';
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'on-the-house-qr-code.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
